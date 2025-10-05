@@ -42,7 +42,7 @@ int main(int argc, char *argv[]) {
     namespace fs = std::filesystem;
     fs::path tokensFilePath(wordTokensFileName); // create a file system path using the output file.
 
-    auto fileToWords = Scanner(tokensFilePath);
+    auto fileToWords = Scanner(inputFileName);
     if( error_type status; (status = fileToWords.tokenize(words)) != NO_ERROR)
 	    exitOnError(status, inputFileName);
 
