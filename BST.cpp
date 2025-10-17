@@ -1,5 +1,5 @@
 //
-// Created by Caleb Clements on 10/17/25.
+//
 //
 // BST.cpp
 //
@@ -30,6 +30,7 @@
 #include <optional>
 #include <utility>
 #include <vector>
+#include "TreeNode.h"
 
 // ===============================
 //  Public API

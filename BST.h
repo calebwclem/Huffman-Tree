@@ -1,5 +1,5 @@
 //
-// Created by Caleb Clements on 10/17/25.
+//
 //
 
 #ifndef IMPLEMENTATION_BST_H
@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 #include <optional>
+#include "TreeNode.h"
 
 class BST {
 public:
@@ -28,13 +29,6 @@ public:
     [[nodiscard]] unsigned height() const noexcept; // empty = 0
 
 private:
-    struct TreeNode {
-        std::string word;
-        size_t count = 1;
-        TreeNode* left = nullptr;
-        TreeNode* right = nullptr;
-        explicit TreeNode(std::string w): word(std::move(w)) {}
-    };
 
     TreeNode* root_ = nullptr;
 
@@ -45,7 +39,5 @@ private:
     static size_t sizeHelper(const TreeNode* n) noexcept;
     static unsigned heightHelper(const TreeNode* n) noexcept;
 };
-
-
 
 #endif //IMPLEMENTATION_BST_H

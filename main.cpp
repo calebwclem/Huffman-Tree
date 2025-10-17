@@ -1,4 +1,68 @@
 
+
+#include "Scanner.hpp"
+#include "BST.h"
+#include <unordered_map>
+#include <filesystem>
+#include <iostream>
+#include <vector>
+#include <string>
+#include <algorithm>
+
+namespace fs = std::filesystem;
+
+int main(int argc, char* argv[]) {
+    fs::path in = (argc >= 2) ? fs::path(argv[1]) : fs::path("input_output/TheBells.txt");
+
+    // 1) Tokenize
+    std::vector<std::string> tokens;
+    Scanner sc{in};
+    auto err = sc.tokenize(tokens);
+    if (err != NO_ERROR) { std::cerr << "Scanner error " << err << "\n"; return 1; }
+
+    // 2) Ground-truth via unordered_map
+    std::unordered_map<std::string, size_t> truth;
+    truth.reserve(tokens.size());
+    for (const auto& w : tokens) ++truth[w];
+
+    // 3) Build BST via insert()
+    BST bst;
+    for (const auto& w : tokens) bst.insert(w);
+
+    // 4) Compare distinct sizes
+    if (bst.size() != truth.size()) {
+        std::cerr << "Distinct-size mismatch: BST=" << bst.size()
+                  << " truth=" << truth.size() << "\n";
+        return 2;
+    }
+
+    // 5) Compare every count (print first 20 mismatches)
+    size_t mismatches = 0;
+    for (const auto& [word, cnt] : truth) {
+        auto c = bst.countOf(word);
+        if (!c || *c != cnt) {
+            if (++mismatches <= 20)
+                std::cerr << "Mismatch: '" << word << "' bst=" << (c ? *c : 0)
+                          << " truth=" << cnt << "\n";
+        }
+    }
+    if (mismatches) { std::cerr << "Total mismatches: " << mismatches << "\n"; return 3; }
+
+    // 6) Optional: ensure inorder is lexicographic
+    std::vector<std::pair<std::string,size_t>> inorder;
+    inorder.reserve(truth.size());
+    bst.inorderCollect(inorder); // NOTE: caller’s responsibility to start from empty
+    bool sorted = std::is_sorted(inorder.begin(), inorder.end(),
+        [](auto& a, auto& b){ return a.first < b.first; });
+    if (!sorted) { std::cerr << "Inorder not sorted by word asc\n"; return 4; }
+
+    std::cout << "Scanner -> BST counts match exactly. Inorder sorted. PASS.\n";
+    return 0;
+}
+
+
+
+/*
 // main_insert_from_file.cpp
 #include "Scanner.hpp"
 #include "BST.h"
@@ -63,7 +127,7 @@ int main(int argc, char* argv[]) {
     std::cout << "BST insert() tests passed on file: " << in << "\n";
     return 0;
 }
-
+*/
 
 /*
  *
