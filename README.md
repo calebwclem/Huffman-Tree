@@ -16,5 +16,4 @@
 
 
 # TESTING & STATUS
-Everything is working as expected and complies with the requirements for PART 1 of the assignment.
-Currently, the program runs on Blue and running the diff command shows no differences (for part 1).
+Everything is working as expected and complies with the requirements for PART 2 of the assignment.
