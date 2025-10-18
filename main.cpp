@@ -1,5 +1,115 @@
 
+#include <cassert>
+#include <iostream>
+#include <memory>
+#include <sstream>
+#include <string>
+#include <utility>
+#include <vector>
 
+#include "PriorityQueue.h"        // <-- adjust if your filename differs
+#include "TreeNode.h"           // <-- or the header that defines TreeNode (word, freq, left, right)
+
+static std::unique_ptr<TreeNode> make_leaf(std::string w, std::size_t f) {
+    // Adapt to your TreeNode constructor/fields:
+    auto n = std::make_unique<TreeNode>(std::move(w), f);
+    // If your TreeNode lacks a (word,freq) ctor, set fields manually:
+    // n->word = w; n->freq = f; n->left = n->right = nullptr;
+    return n;
+}
+
+int main() {
+    // Own the nodes here; PQ is non-owning
+    std::vector<std::unique_ptr<TreeNode>> owners;
+    owners.emplace_back(make_leaf("wolf",   42));
+    owners.emplace_back(make_leaf("apple",   7));
+    owners.emplace_back(make_leaf("camp's",  7));
+    owners.emplace_back(make_leaf("fire",    3));
+    owners.emplace_back(make_leaf("zebra",   7));
+    owners.emplace_back(make_leaf("alpha",   7));
+
+    std::vector<TreeNode*> raw;
+    raw.reserve(owners.size());
+    for (auto& up : owners) raw.push_back(up.get());
+
+    // Build PQ (sorts inside ctor): order should be
+    // 42 wolf, 7 alpha, 7 apple, 7 camp's, 7 zebra, 3 fire   (desc by freq, tie word asc)
+    PriorityQueue pq(std::move(raw));
+    assert(pq.size() == 6);
+    assert(!pq.empty());
+
+    // Min is at the back -> "fire",3
+    {
+        TreeNode* mn = pq.findMin();
+        assert(mn && mn->word == "fire" && mn->count == 3);
+    }
+
+    // extractMin removes "fire"
+    {
+        TreeNode* mn = pq.extractMin();
+        assert(mn && mn->word == "fire" && pq.size() == 5);
+    }
+
+    // Insert another 7-freq word to test tie-breaker position ("marmot")
+    auto extra = make_leaf("marmot", 7);
+    TreeNode* extra_raw = extra.get();
+    owners.emplace_back(std::move(extra)); // keep ownership alive
+    pq.insert(extra_raw);
+    assert(pq.size() == 6);
+
+    // Now, popping mins one by one should yield:
+    // 7 zebra, 7 marmot, 7 camp's, 7 apple, 7 alpha, 42 wolf
+    // (because min is at back; among equal 7s, lexicographically *last* appears first when popping)
+    const std::vector<std::pair<std::string,std::size_t>> expected_mins = {
+        {"zebra",7}, {"marmot",7}, {"camp's",7}, {"apple",7}, {"alpha",7}, {"wolf",42}
+    };
+
+    for (const auto& [ew, ef] : expected_mins) {
+        TreeNode* m = pq.findMin();
+        assert(m && m->word == ew && m->count == ef);
+        pq.deleteMin();
+    }
+    assert(pq.empty());
+
+    // Rebuild a fresh PQ to test print() (.freq formatting)
+    {
+        std::vector<std::unique_ptr<TreeNode>> own2;
+        own2.emplace_back(make_leaf("wolf",   42));
+        own2.emplace_back(make_leaf("alpha",   7));
+        own2.emplace_back(make_leaf("apple",   7));
+        own2.emplace_back(make_leaf("camp's",  7));
+        own2.emplace_back(make_leaf("zebra",   7));
+
+        std::vector<TreeNode*> raw2;
+        for (auto& up : own2) raw2.push_back(up.get());
+        PriorityQueue pq2(std::move(raw2));
+
+        std::ostringstream oss;
+        pq2.print(oss); // should emit in current (desc) order
+
+        const std::string out = oss.str();
+        // Spot-check first and last lines for exact spacing:
+        // First line must be "        42 wolf\n" (10-wide right-justified 42, then ONE space, then word)
+        const std::string first = out.substr(0, out.find('\n') + 1);
+        assert(first == "        42 wolf\n");
+
+        // Last printed line should correspond to the lexicographically largest among 7s ("zebra")
+        std::istringstream iss(out);
+        std::string line, last_line;
+        while (std::getline(iss, line)) last_line = line;
+        assert(last_line == "         7 zebra");
+    }
+
+    std::cout << "PriorityQueue tests passed.\n";
+    return 0;
+}
+
+
+
+
+
+
+/*
 #include "Scanner.hpp"
 #include "BST.h"
 #include <unordered_map>
@@ -60,7 +170,7 @@ int main(int argc, char* argv[]) {
     return 0;
 }
 
-
+*/
 
 /*
 // main_insert_from_file.cpp

@@ -106,7 +106,7 @@ unsigned BST::height() const noexcept {
 //  Private helpers
 // ===============================
 
-void BST::destroy(BST::TreeNode* n) noexcept {
+void BST::destroy(TreeNode* n) noexcept {
     // Recursively delete the entire subtree rooted at n.
     // Safe on nullptr.
     if (!n) return;
@@ -115,7 +115,7 @@ void BST::destroy(BST::TreeNode* n) noexcept {
     delete n;
 }
 
-BST::TreeNode* BST::insertHelper(BST::TreeNode* n, const std::string& w) {
+TreeNode* BST::insertHelper(TreeNode* n, const std::string& w) {
     // Standard BST insert on key 'w':
     // - If n is nullptr: create Node(w) with count=1 and return it.
     // - If w == n->word: ++n->count and return n.
@@ -139,7 +139,7 @@ BST::TreeNode* BST::insertHelper(BST::TreeNode* n, const std::string& w) {
     return n;
 }
 
-const BST::TreeNode* BST::findNode(const TreeNode* n, std::string_view w) noexcept {
+const TreeNode* BST::findNode(const TreeNode* n, std::string_view w) noexcept {
     // Iterative or recursive lookup:
     // - Follow BST ordering until matching node or nullptr.
     while (n) {
