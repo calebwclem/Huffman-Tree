@@ -13,4 +13,6 @@ add_executable(p3_part1 main.cpp
         PriorityQueue.cpp
         PriorityQueue.h
         TreeNode.h
+        HuffmanTree.cpp
+        HuffmanTree.h
 )

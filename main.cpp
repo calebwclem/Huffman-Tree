@@ -20,6 +20,7 @@ static void print_usage_and_exit(const char* prog) {
     std::exit(1);
 }
 
+/*
 int main(int argc, char* argv[]) {
     // ---- 1) CLI parsing (exactly one argument) ----
     if (argc != 2) {
@@ -111,7 +112,7 @@ int main(int argc, char* argv[]) {
 
     // Success
     return 0;
-}//End main phase 2
+}//End main phase 2 */
 
 
 /*

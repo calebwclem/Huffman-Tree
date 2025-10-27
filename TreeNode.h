@@ -13,8 +13,18 @@ struct TreeNode {
     size_t count = 1;
     TreeNode* left = nullptr;
     TreeNode* right = nullptr;
-    explicit TreeNode(std::string w): word(std::move(w)) {}
-    TreeNode(std::string w, std::size_t f): word(std::move(w)), count(f) {}
+
+    // Leaf
+    explicit TreeNode(std::string w, std::size_t f=1)
+        : word(std::move(w)), key_word(word), count(f) {}
+
+    // Internal
+    // FOR USE IN BUILDING OF HUFFMAN TREE (PART 3)
+    TreeNode(TreeNode* L, TreeNode* R)
+        : word(""),
+          key_word(std::min(L->key_word, R->key_word)),
+          count(L->count + R->count),
+          left(L), right(R) {}
 };
 
 #endif //IMPLEMENTATION_TREENODE_H

@@ -53,7 +53,7 @@ void PriorityQueue::insert(TreeNode* node) {
 
 bool PriorityQueue::higherPriority(const TreeNode* a, const TreeNode* b) noexcept {
     if (a->count != b->count) return a->count > b->count;     // higher freq first
-    return a->word < b->word;                     // tie: lexicographic asc
+    return a->key_word < b->key_word;                     // tie: lexicographic asc
 }
 
 bool PriorityQueue::isSorted() const {
