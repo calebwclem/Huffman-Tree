@@ -6,7 +6,7 @@
 #include <vector>
 #include <ostream>
 #include <unordered_map>
-
+#include <algorithm>
 #include "TreeNode.h"
 #include "PriorityQueue.h"
 #include "utils.hpp" // for error_type if you have it

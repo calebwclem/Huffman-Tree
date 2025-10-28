@@ -9,6 +9,21 @@ HuffmanTree::~HuffmanTree() {
     root_ = nullptr;
 }
 
+unsigned HuffmanTree::height() const noexcept {
+    return heightHelper(root_);
+}
+
+
+unsigned HuffmanTree::heightHelper(const TreeNode* n) noexcept {
+
+    if (!n)
+        return 0; // empty tree = 0 per spec
+
+    //Return 1 + the larger of the 2 subtrees!
+    return 1u + std::max(heightHelper(n->left), heightHelper(n->right));
+}
+
+
 void HuffmanTree::destroy(TreeNode* n) noexcept {
     if (!n) return;
     destroy(n->left);
