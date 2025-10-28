@@ -39,7 +39,7 @@ private:
     static void assignCodesDFS(const TreeNode* n,
                                std::string& prefix,
                                std::vector<std::pair<std::string,std::string>>& out);
-    static void headerPreorder(const TreeNode* n,
+    static void writeHeaderPreorder(const TreeNode* n,
                                std::string& prefix,
                                std::ostream& os);
     static unsigned heightHelper(const TreeNode* n) noexcept;

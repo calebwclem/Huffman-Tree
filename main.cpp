@@ -1,3 +1,159 @@
+// main.cpp — Part 3 end-to-end driver: Scanner → BST → .freq → Huffman(.hdr + .code)
+// Adjust include names if yours differ.
+// main.cpp — final driver: expects ./input_output/<base>.txt ONLY
+#include <filesystem>
+#include <fstream>
+#include <iostream>
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
+
+#include "Scanner.hpp"
+#include "BST.h"
+#include "PriorityQueue.h"
+#include "HuffmanTree.h"
+
+namespace fs = std::filesystem;
+
+static void usage(const char* prog) {
+    std::cerr << "Usage: " << prog << " <base>.txt\n"
+              << "  (input file must be located in ./input_output)\n";
+    std::exit(1);
+}
+
+int main(int argc, char* argv[]) {
+    if (argc != 2) usage(argv[0]);
+
+    // Enforce input_output/ policy
+    fs::path filename = fs::path(argv[1]).filename();     // ignore any path the user passed
+    if (filename.extension() != ".txt") {
+        std::cerr << "Error: expected a .txt file name (e.g., TheBells.txt)\n";
+        return 1;
+    }
+
+    fs::path dir = fs::path("input_output");
+    if (!fs::exists(dir)) {
+        std::cerr << "Error: input directory does not exist: " << dir << "\n";
+        return 2;
+    }
+
+    fs::path in = dir / filename;
+    std::ifstream fin(in);
+    if (!fin) {
+        std::cerr << "Error: input file not found or cannot be opened: " << in << "\n";
+        return 3;
+    }
+
+    // Derive outputs in the SAME directory
+    std::string base = in.stem().string();
+    fs::path tokensPath = dir / (base + ".tokens");
+    fs::path freqPath   = dir / (base + ".freq");
+    fs::path hdrPath    = dir / (base + ".hdr");
+    fs::path codePath   = dir / (base + ".code");
+
+    // 1) Scanner → tokens + .tokens
+    std::vector<std::string> tokens;
+    {
+        Scanner sc{in};
+        error_type err = sc.tokenize(tokens, tokensPath);
+        if (err != NO_ERROR) {
+            std::cerr << "Error: scanner/tokenizer failed (" << err << ") for " << in << "\n";
+            return 4;
+        }
+    }
+
+    // 2) BST → counts (lex by word)
+    BST bst;
+    bst.bulkInsert(tokens);
+
+    std::vector<std::pair<std::string, std::size_t>> counts_lex;
+    counts_lex.reserve(bst.size());
+    bst.inorderCollect(counts_lex); // appends in word-ascending order
+
+    // Required BST stats
+    unsigned H = bst.height();
+    std::size_t U = bst.size();
+    std::size_t T = tokens.size();
+    std::size_t MIN = 0, MAX = 0;
+    if (!counts_lex.empty()) {
+        MIN = counts_lex.front().second;
+        MAX = counts_lex.front().second;
+        for (const auto& p : counts_lex) {
+            if (p.second < MIN) MIN = p.second;
+            if (p.second > MAX) MAX = p.second;
+        }
+    }
+    std::cout << "BST height: " << H << "\n";
+    std::cout << "BST unique words: " << U << "\n";
+    std::cout << "Total tokens: " << T << "\n";
+    std::cout << "Min frequency: " << MIN << "\n";
+    std::cout << "Max frequency: " << MAX << "\n";
+
+    // 3) .freq via PriorityQueue (count desc, tie key_word/word asc)
+    {
+        std::vector<std::unique_ptr<TreeNode>> owners;
+        owners.reserve(counts_lex.size());
+        std::vector<TreeNode*> raw;
+        raw.reserve(counts_lex.size());
+
+        for (const auto& [w, c] : counts_lex) {
+            auto node = std::make_unique<TreeNode>(w); // if you have (w,c) ctor, use it instead
+            node->count = c;
+            node->left = node->right = nullptr;
+            raw.push_back(node.get());
+            owners.emplace_back(std::move(node));
+        }
+
+        PriorityQueue pq(std::move(raw));
+        std::ofstream ofs(freqPath);
+        if (!ofs) {
+            std::cerr << "Error: unable to open output .freq: " << freqPath << "\n";
+            return 5;
+        }
+        pq.print(ofs); // uses setw(10) << count << ' ' << word << '\n'
+        if (!ofs) {
+            std::cerr << "Error: failed while writing .freq: " << freqPath << "\n";
+            return 6;
+        }
+    }
+
+    // 4) Huffman tree → .hdr and .code
+    HuffmanTree htree = HuffmanTree::buildFromCounts(counts_lex);
+
+    // .hdr (pre-order over leaves: "word code")
+    {
+        std::ofstream hdr(hdrPath);
+        if (!hdr) {
+            std::cerr << "Error: unable to open output .hdr: " << hdrPath << "\n";
+            return 7;
+        }
+        error_type err = htree.writeHeader(hdr);
+        if (err != NO_ERROR || !hdr) {
+            std::cerr << "Error: failed while writing .hdr: " << hdrPath << "\n";
+            return 8;
+        }
+    }
+
+    // .code (ASCII 0/1 wrapped to 80 cols, final newline)
+    {
+        std::ofstream code(codePath);
+        if (!code) {
+            std::cerr << "Error: unable to open output .code: " << codePath << "\n";
+            return 9;
+        }
+        error_type err = htree.encode(tokens, code, 80);
+        if (err != NO_ERROR || !code) {
+            std::cerr << "Error: failed while writing .code: " << codePath << "\n";
+            return 10;
+        }
+    }
+
+    return 0;
+}
+//End main phase 3 (final phase)
+
+/*
 // main_part2.cpp
 #include <algorithm>
 #include <cstddef>
@@ -20,7 +176,7 @@ static void print_usage_and_exit(const char* prog) {
     std::exit(1);
 }
 
-/*
+
 int main(int argc, char* argv[]) {
     // ---- 1) CLI parsing (exactly one argument) ----
     if (argc != 2) {
