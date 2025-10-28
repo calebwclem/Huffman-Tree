@@ -54,9 +54,19 @@ int main(int argc, char* argv[]) {
 
     // 1) Scanner → tokens + .tokens
     std::vector<std::string> tokens;
+    std::size_t sum_letters = 0;
     {
         Scanner sc{in};
         error_type err = sc.tokenize(tokens, tokensPath);
+
+        // Sum of the letters in input words
+        // Count letters a–z only (ignore apostrophes)
+        for (const auto& t : tokens) {
+            for (unsigned char ch : t) {
+                if (ch >= 'a' && ch <= 'z') ++sum_letters;
+            }
+        }
+
         if (err != NO_ERROR) {
             std::cerr << "Error: scanner/tokenizer failed (" << err << ") for " << in << "\n";
             return 4;
@@ -148,6 +158,8 @@ int main(int argc, char* argv[]) {
             return 10;
         }
     }
+    std::cout << "Huffman tree height: " << htree.height() << "\n";
+    std::cout << "Sum of the letters in input words: " << sum_letters << "\n";
 
     return 0;
 }
