@@ -1,5 +1,4 @@
-// main.cpp — Part 3 end-to-end driver: Scanner → BST → .freq → Huffman(.hdr + .code)
-// Adjust include names if yours differ.
+// main.cpp — Part 3 end-to-end driver: Scanner → BST → .freq → Huffman(.hdr + .code
 // main.cpp — final driver: expects ./input_output/<base>.txt ONLY
 #include <filesystem>
 #include <fstream>
